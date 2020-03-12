@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shopapp/provider/products.dart';
+import 'package:shopapp/provider/cart.dart';
+import 'package:shopapp/screens/cart_screen.dart';
+import 'package:shopapp/widgets/budge.dart';
 import 'package:shopapp/widgets/products_grid.dart';
 
 enum FilterOptions {
@@ -15,6 +17,7 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorites = false;
+
   @override
   Widget build(BuildContext context) {
     // app wide filter use this approch
@@ -23,6 +26,18 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
       appBar: AppBar(
         title: Text('My Shop'),
         actions: <Widget>[
+          Consumer<Cart>(
+            builder: (_, cartData, child) => Badge(
+              child: child,
+              value: cartData.cartCount.toString(),
+            ),
+            child: IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.of(context).pushNamed(CartScreen.routName);
+              },
+            ),
+          ),
           PopupMenuButton(
             onSelected: (value) {
               setState(() {
