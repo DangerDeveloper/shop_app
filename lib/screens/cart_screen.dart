@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopapp/provider/cart.dart';
+import 'package:shopapp/provider/orders.dart';
 import 'package:shopapp/widgets/cart_item_widget.dart';
 
 class CartScreen extends StatelessWidget {
@@ -30,7 +31,11 @@ class CartScreen extends StatelessWidget {
                     width: 2.0,
                   ),
                   RaisedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Provider.of<Orders>(context, listen: false).addOrder(
+                          cart.item.values.toList(), cart.totalAmount);
+                      cart.clear();
+                    },
                     child: Text('Oder Now'),
                   ),
                 ],
@@ -45,6 +50,7 @@ class CartScreen extends StatelessWidget {
               itemCount: cart.item.length,
               itemBuilder: (ctx, index) => CartItemWidget(
                 // if we use map like next
+                productId: cart.item.keys.toList()[index],
                 title: cart.item.values.toList()[index].title,
                 id: cart.item.values.toList()[index].id,
                 price: cart.item.values.toList()[index].price,
