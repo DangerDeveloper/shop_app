@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shopapp/provider/product.dart';
+import 'package:shopapp/provider/products.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routName = '/EditProductScreen';
@@ -23,11 +25,39 @@ class _EditProductScreenState extends State<EditProductScreen> {
     imageUrl: '',
   );
 
+  var _didChangeValue = {
+    'title': '',
+    'description': '',
+    'price': '',
+    'imageUrl': '',
+  };
+  var _isDidChange = true;
+
   @override
   void initState() {
     // i cant understand this bus use this (4).
     _imageFocusNode.addListener(_changeImageBoxStatus);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isDidChange) {
+      final productId = ModalRoute.of(context).settings.arguments as String;
+      if (productId != null) {
+        _editedProduct =
+            Provider.of<Products>(context, listen: false).findById(productId);
+        _didChangeValue = {
+          'title': _editedProduct.title,
+          'description': _editedProduct.description,
+          'price': _editedProduct.price.toString(),
+          'imageUrl': '',
+        };
+        _imageTextEditingController.text = _editedProduct.imageUrl;
+      }
+    }
+    _isDidChange = false;
+    super.didChangeDependencies();
   }
 
   @override
@@ -45,12 +75,29 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void _changeImageBoxStatus() {
     // check that tis is in focus or not (6).
     if (!_imageFocusNode.hasFocus) {
+//      if ((!_imageTextEditingController.text.startsWith('http') &&
+//              !_imageTextEditingController.text.startsWith('https')) ||
+//          (!_imageTextEditingController.text.endsWith('.png') &&
+//              !_imageTextEditingController.text.endsWith('.jpg') &&
+//              !_imageTextEditingController.text.endsWith('.jpeg'))) {
+//        return;
+//      }
       setState(() {});
     }
   }
 
   void _onSave() {
+    final checkVelidation = _key.currentState.validate();
+    if (!checkVelidation) {
+      return;
+    }
     _key.currentState.save();
+    if (_editedProduct.id != null) {
+      Provider.of<Products>(context, listen: false).updateProduct(_editedProduct.id,_editedProduct);
+    } else {
+      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    }
+    Navigator.of(context).pop();
   }
 
   @override
@@ -70,14 +117,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
             child: Column(
               children: <Widget>[
                 TextFormField(
+                  initialValue: _didChangeValue['title'],
                   decoration: InputDecoration(labelText: 'Title'),
                   textInputAction: TextInputAction.next,
                   onFieldSubmitted: (_) {
                     FocusScope.of(context).requestFocus(_priceFocusNode);
                   },
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Please Enter Title';
+                    }
+                    return null;
+                  },
                   onSaved: (value) {
                     _editedProduct = Product(
-                      id: null,
+                      id: _editedProduct.id,
+                      isFavorite: _editedProduct.isFavorite,
                       title: value,
                       description: _editedProduct.description,
                       price: _editedProduct.price,
@@ -86,6 +141,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   },
                 ),
                 TextFormField(
+                  initialValue: _didChangeValue['price'],
                   decoration: InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
                   focusNode: _priceFocusNode,
@@ -93,9 +149,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   onFieldSubmitted: (_) {
                     FocusScope.of(context).requestFocus(_descriptionFocusNode);
                   },
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Please Enter Price.';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Please Enter Valid Price.';
+                    }
+                    if (double.tryParse(value) <= 0) {
+                      return 'PLease Enter a Greater Price then zero.';
+                    }
+                    return null;
+                  },
                   onSaved: (value) {
                     _editedProduct = Product(
-                      id: null,
+                      id: _editedProduct.id,
+                      isFavorite: _editedProduct.isFavorite,
                       title: _editedProduct.title,
                       description: _editedProduct.description,
                       price: double.parse(value),
@@ -104,13 +173,24 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   },
                 ),
                 TextFormField(
+                  initialValue: _didChangeValue['description'],
                   decoration: InputDecoration(labelText: 'Discreption'),
                   maxLines: 3,
                   keyboardType: TextInputType.multiline,
                   focusNode: _descriptionFocusNode,
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Please Enter Discreption';
+                    }
+                    if (value.length < 10) {
+                      return 'Should be atleast 10 charcter.';
+                    }
+                    return null;
+                  },
                   onSaved: (value) {
                     _editedProduct = Product(
-                      id: null,
+                      id: _editedProduct.id,
+                      isFavorite: _editedProduct.isFavorite,
                       title: _editedProduct.title,
                       description: value,
                       price: _editedProduct.price,
@@ -153,9 +233,25 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         onFieldSubmitted: (_) {
                           _onSave();
                         },
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please Enter ImageURL';
+                          }
+                          if (!value.startsWith('http') &&
+                              !value.startsWith('https')) {
+                            return 'Please Enter a Valid Url';
+                          }
+                          if (!value.endsWith('.png') &&
+                              !value.endsWith('.jpg') &&
+                              !value.endsWith('.jpeg')) {
+                            return 'Please Enter a Valid image Format';
+                          }
+                          return null;
+                        },
                         onSaved: (value) {
                           _editedProduct = Product(
-                            id: null,
+                            id: _editedProduct.id,
+                            isFavorite: _editedProduct.isFavorite,
                             title: _editedProduct.title,
                             description: _editedProduct.description,
                             price: _editedProduct.price,
