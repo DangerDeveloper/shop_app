@@ -87,7 +87,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
-  void _onSave() {
+  Future<void> _onSave() async {
     final checkVelidation = _key.currentState.validate();
     if (!checkVelidation) {
       return;
@@ -97,17 +97,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _isLoading = true;
     });
     if (_editedProduct.id != null) {
-      Provider.of<Products>(context, listen: false)
+      await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id, _editedProduct);
-      setState(() {
-        _isLoading = false;
-      });
-      Navigator.of(context).pop();
     } else {
-      Provider.of<Products>(context, listen: false)
-          .addProduct(_editedProduct)
-          .catchError((error) {
-        return showDialog<Null>(
+      try {
+        await Provider.of<Products>(context, listen: false)
+            .addProduct(_editedProduct);
+      } catch (error) {
+        await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
             title: Text('Error'),
@@ -121,14 +118,56 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      }).then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pop();
-      });
+      }
     }
+    setState(() {
+      _isLoading = false;
+    });
+    Navigator.of(context).pop();
   }
+
+//  void _onSave() {
+//    final checkVelidation = _key.currentState.validate();
+//    if (!checkVelidation) {
+//      return;
+//    }
+//    _key.currentState.save();
+//    setState(() {
+//      _isLoading = true;
+//    });
+//    if (_editedProduct.id != null) {
+//      Provider.of<Products>(context, listen: false)
+//          .updateProduct(_editedProduct.id, _editedProduct);
+//      setState(() {
+//        _isLoading = false;
+//      });
+//      Navigator.of(context).pop();
+//    } else {
+//      Provider.of<Products>(context, listen: false)
+//          .addProduct(_editedProduct)
+//          .catchError((error) {
+//        return showDialog<Null>(
+//          context: context,
+//          builder: (ctx) => AlertDialog(
+//            title: Text('Error'),
+//            content: Text('Somthing Went Wrong!'),
+//            actions: <Widget>[
+//              FlatButton(
+//                  onPressed: () {
+//                    Navigator.of(ctx).pop();
+//                  },
+//                  child: Text('OK')),
+//            ],
+//          ),
+//        );
+//      }).then((_) {
+//        setState(() {
+//          _isLoading = false;
+//        });
+//        Navigator.of(context).pop();
+//      });
+//    }
+//  }
 
   @override
   Widget build(BuildContext context) {
