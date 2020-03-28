@@ -19,8 +19,9 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorites = false;
-  var _didChange = true;
-  var _isLoading = true;
+
+//  var _didChange = true;
+//  var _isLoading = false;
 //  var _isLoading = false;
 
 //  @override
@@ -31,21 +32,21 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
 //    super.initState();
 //  }
 
-  @override
-  void didChangeDependencies() {
-    if (_didChange) {
+//  @override
+//  void didChangeDependencies() {
+//    if (_didChange) {
 //      setState(() {
 //        _isLoading = true;
 //      });
-      Provider.of<Products>(context).fetchAndSetProduct().then((_) {
-        setState(() {
-          _isLoading = false;
-        });
-      });
-    }
-    _didChange = false;
-    super.didChangeDependencies();
-  }
+//      Provider.of<Products>(context).fetchAndSetProduct().then((_) {
+//        setState(() {
+//          _isLoading = false;
+//        });
+//      });
+//    }
+//    _didChange = false;
+//    super.didChangeDependencies();
+//  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +97,10 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : ProductsGrid(_showOnlyFavorites),
+      body: FutureBuilder(
+        future: Provider.of<Products>(context).fetchAndSetProduct(),
+        builder: (ctx, s) => ProductsGrid(_showOnlyFavorites),
+      ),
     );
   }
 }

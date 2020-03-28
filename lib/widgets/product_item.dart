@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shopapp/provider/auth.dart';
 import 'package:shopapp/provider/cart.dart';
 import 'package:shopapp/provider/product.dart';
 import 'package:shopapp/screens/product_detail_screen.dart';
 
 class ProductItem extends StatelessWidget {
-//  final String imageUrl;
-//  final String id;
-//  final String title;
-//
-//  ProductItem({this.imageUrl, this.title, this.id});
-
   @override
   Widget build(BuildContext context) {
     // this is a single class of product.
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
+    final authToken = Provider.of<Auth>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10.0),
       child: GridTile(
@@ -39,7 +35,7 @@ class ProductItem extends StatelessWidget {
               icon: Icon(
                   product.isFavorite ? Icons.favorite : Icons.favorite_border),
               onPressed: () {
-                product.toggleFavoriteStatus();
+                product.toggleFavoriteStatus(authToken.token, authToken.userId);
               },
               color: Theme.of(context).accentColor,
             ),
@@ -57,9 +53,11 @@ class ProductItem extends StatelessWidget {
                 SnackBar(
                   content: Text('Added Succesful'),
                   duration: Duration(seconds: 2),
-                  action: SnackBarAction(label: 'UNDO', onPressed: () {
-                    cart.removeOne(product.id);
-                  }),
+                  action: SnackBarAction(
+                      label: 'UNDO',
+                      onPressed: () {
+                        cart.removeOne(product.id);
+                      }),
                 ),
               );
             },
