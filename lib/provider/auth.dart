@@ -31,7 +31,7 @@ class Auth with ChangeNotifier {
 
   Future<void> _authmode(String email, String password, String urla) async {
     final url =
-        'https://identitytoolkit.googleapis.com/v1/accounts:$urla?key=AIzaSyBkJb8V7tIB9Vi-8j8MYWyto48Y7PMK3oI';
+        'https://identitytoolkit.googleapis.com/v1/accounts:$urla?key=key';
     try {
       final response = await http.post(
         url,
